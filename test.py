@@ -1,13 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.datasets import make_moons
+from sklearn.preprocessing import StandardScaler
+from scipy.linalg import svd
+from sklearn.model_selection import train_test_split
 
-x,y = make_moons(n_samples=1000, noise=0.15, random_state=42)
-print(x.shape, y.shape)
 
-def plot_data(xs, ys):
-    data = np.c_[xs,ys]
-    plt.plot(data[y==0, 0], data[y==0, 1], "r.")
-    plt.plot(data[y==1, 0], data[y==1, 1], "g.")
-    plt.show()
-plot_data(x,y)
+from sklearn.datasets import load_iris
+data = load_iris()
+y = data.target
+x = data.data
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+
+
+#PCA plot:
+def plot_PCA(xs, ys, n_dimensions):
+    scaler = StandardScaler()
+    scaled_x = scaler.fit_transform(x)
+    covarience_x = np.cov(scaled_x)       #covarience matrix (variance between adjacent pairs in matrix x)
+    u,s,vT = svd(covarience_x)
+    print(u, s.round(decimals=2), vT)
+
+
+plot_PCA(x,y,n_dimensions=2)
