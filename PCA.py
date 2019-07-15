@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from scipy.linalg import svd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
 from numpy.linalg import eig
 from sklearn.manifold import TSNE
 from sklearn.datasets import load_iris
@@ -50,19 +50,29 @@ def plot_tSNE(xs,ys):
     plt.show()
 #plot_tSNE(x,y)
 
-x_train, x_test, y_train, y_test = train_test_split(x,y, test_size=0.2,random_state=42)
+x_train, x_test, y_train, y_test = train_test_split(x,y, test_size=0.33,random_state=42)
+y_train = y_train.ravel()
 
 def forest_classifier_training(x_train, y_train):
-    y_train = y_train.ravel()
     bagging_clf = BaggingClassifier(DecisionTreeClassifier(splitter="random",
     max_leaf_nodes=16),n_estimators=500,max_samples=1.0,bootstrap=True,n_jobs=-1)
     bagging_clf.fit(x_train,y_train)
     return bagging_clf
 clf = forest_classifier_training(x_train,y_train)
 
-def cross_validation():
-    pass
+def grid_search(x_train, y_train, classifier):
+    parameters = {"splitter":("best","random")}
+    gs_clf = GridSearchCV(classifier.base_estimator_,parameters,cv=5)
+    gs_clf.fit(x_train,y_train)
+    best_clf=gs_clf.best_estimator_
+    return best_clf
+best_clf = grid_search(x_train, y_train, clf)
+
+def cross_validation(x_train, y_train, classifier):
+    scores = cross_val_score(classifier, x_train, y_train,cv=10)
+    print(scores.mean())
+cross_validation(x_train,y_train,best_clf)
 
 
 #y_hat = clf.predict(x_test)
-#print("Score:", accuracy_score(y_hat,y_test))
+#print("Score:", accuracy_score(y_hat,y_test))"""
