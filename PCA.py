@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from scipy.linalg import svd
-from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.model_selection import train_test_split, cross_val_score,GridSearchCV, RandomizedSearchCV
 from numpy.linalg import eig
 from sklearn.manifold import TSNE
 from sklearn.datasets import load_iris
@@ -61,18 +61,20 @@ def forest_classifier_training(x_train, y_train):
 clf = forest_classifier_training(x_train,y_train)
 
 def grid_search(x_train, y_train, classifier):
-    parameters = {"splitter":("best","random")}
-    gs_clf = GridSearchCV(classifier.base_estimator_,parameters,cv=5)
+    parameters = {"splitter":("best","random"), "max_leaf_nodes":[np.random.randint(1,high=50)], "random_state":[42]}
+    gs_clf = RandomizedSearchCV(classifier.base_estimator_,parameters,cv=10)
     gs_clf.fit(x_train,y_train)
     best_clf=gs_clf.best_estimator_
+    print(best_clf)
     return best_clf
 best_clf = grid_search(x_train, y_train, clf)
 
 def cross_validation(x_train, y_train, classifier):
     scores = cross_val_score(classifier, x_train, y_train,cv=10)
-    print(scores.mean())
+    print("All CV scores:", scores)
+    print("Mean CV score:", scores.mean())
 cross_validation(x_train,y_train,best_clf)
 
 
-#y_hat = clf.predict(x_test)
-#print("Score:", accuracy_score(y_hat,y_test))"""
+y_hat = best_clf.predict(x_test)
+print("Score:", accuracy_score(y_hat,y_test))
