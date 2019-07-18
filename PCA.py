@@ -80,23 +80,24 @@ cross_validation(x_train,y_train,best_clf)
 def learning_curves(estimator, x, y, train_sizes, cv):
     train_sizes, train_scores, validation_scores = learning_curve(
     estimator, x, y, train_sizes = train_sizes,cv = cv,
-    scoring = 'neg_mean_squared_error') #MSE or accuracy (graph inverted)
+    scoring = 'accuracy') #MSE or accuracy (graph inverted)
     #means and std:
-    train_scores_mean = -np.mean(train_scores,axis=1)
-    validation_scores_mean = -np.mean(validation_scores,axis=1)
+    train_scores_mean = np.mean(train_scores,axis=1)
+    validation_scores_mean = np.mean(validation_scores,axis=1)
     train_scores_std = np.std(train_scores,axis=1)
     validation_scores_std = np.std(validation_scores,axis=1)
     #Graph:
     plt.plot(train_sizes, train_scores_mean, "r-", label = 'Training error')
-    plt.plot(train_sizes, validation_scores_mean, "g-", label = 'Validation error')
+    plt.plot(train_sizes, validation_scores_mean, "g-", label = 'Validation (test) error')
     plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
     train_scores_mean + train_scores_std, alpha=0.1,color="r")
     plt.fill_between(train_sizes, validation_scores_mean - validation_scores_std,
     validation_scores_mean + validation_scores_std, alpha=0.1, color="g")
-    plt.ylabel('MSE Score', fontsize = 14)
+    plt.ylabel('Accuracy Score', fontsize = 14)
     plt.xlabel('Training set size', fontsize = 14)
     title = 'Learning curves for a ' + str(estimator).split('(')[0] + ' model'
-    plt.title(title, fontsize = 12, y = 1.03)
+    plt.title(title, fontsize = 12)
+    plt.ylim(0,1.1)
     plt.legend()
     plt.show()
     #not enough data for validation curves to give valid results
