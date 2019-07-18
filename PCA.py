@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from scipy.linalg import svd
-from sklearn.model_selection import train_test_split, cross_val_score,GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score,GridSearchCV,RandomizedSearchCV
+from sklearn.model_selection import cross_val_predict,learning_curve
 from numpy.linalg import eig
 from sklearn.manifold import TSNE
 from sklearn.datasets import load_iris
@@ -61,7 +63,7 @@ def forest_classifier_training(x_train, y_train):
 clf = forest_classifier_training(x_train,y_train)
 
 def grid_search(x_train, y_train, classifier):
-    parameters = {"splitter":("best","random"), "max_leaf_nodes":[np.random.randint(1,high=50)], "random_state":[42]}
+    parameters = {"splitter":("best","random"), "max_leaf_nodes":[np.random.randint(2,high=50)], "random_state":[42]}
     gs_clf = RandomizedSearchCV(classifier.base_estimator_,parameters,cv=10)
     gs_clf.fit(x_train,y_train)
     best_clf=gs_clf.best_estimator_
@@ -75,6 +77,36 @@ def cross_validation(x_train, y_train, classifier):
     print("Mean CV score:", scores.mean())
 cross_validation(x_train,y_train,best_clf)
 
+def learning_curves(estimator, x, y, train_sizes, cv):
+    train_sizes, train_scores, validation_scores = learning_curve(
+    estimator, x, y, train_sizes = train_sizes,cv = cv,
+    scoring = 'neg_mean_squared_error') #MSE or accuracy (graph inverted)
+    #means and std:
+    train_scores_mean = -np.mean(train_scores,axis=1)
+    validation_scores_mean = -np.mean(validation_scores,axis=1)
+    train_scores_std = np.std(train_scores,axis=1)
+    validation_scores_std = np.std(validation_scores,axis=1)
+    #Graph:
+    plt.plot(train_sizes, train_scores_mean, "r-", label = 'Training error')
+    plt.plot(train_sizes, validation_scores_mean, "g-", label = 'Validation error')
+    plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+    train_scores_mean + train_scores_std, alpha=0.1,color="r")
+    plt.fill_between(train_sizes, validation_scores_mean - validation_scores_std,
+    validation_scores_mean + validation_scores_std, alpha=0.1, color="g")
+    plt.ylabel('MSE Score', fontsize = 14)
+    plt.xlabel('Training set size', fontsize = 14)
+    title = 'Learning curves for a ' + str(estimator).split('(')[0] + ' model'
+    plt.title(title, fontsize = 12, y = 1.03)
+    plt.legend()
+    plt.show()
+    #not enough data for validation curves to give valid results
+    #code for reference
+learning_curves(best_clf, x_train, y_train, np.linspace(0.1,1.0,30), cv=30)
 
-y_hat = best_clf.predict(x_test)
-print("Score:", accuracy_score(y_hat,y_test))
+def confusion_matrix():
+    pass
+confusion_matrix()
+
+
+y_pred = best_clf.predict(x_test)
+print("Score:", accuracy_score(y_pred,y_test))
