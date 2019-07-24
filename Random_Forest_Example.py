@@ -104,7 +104,6 @@ def learning_curves(estimator, x, y, train_sizes, cv):
     plt.legend()
     plt.show()
     #not enough data for validation curves to give valid results
-    #code for reference
 #learning_curves(best_clf, x_train, y_train, np.linspace(0.1,1.0,30), cv=30)
 
 def plot_confusion_matrix(clf, x, y_actual, cv, title=None):
