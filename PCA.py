@@ -11,7 +11,8 @@ from sklearn.datasets import load_iris
 from sklearn.ensemble import BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
+import seaborn as sn
 
 data = load_iris()
 y = data.target.reshape(-1,1)
@@ -78,10 +79,12 @@ def cross_validation(x_train, y_train, classifier):
 cross_validation(x_train,y_train,best_clf)
 
 def learning_curves(estimator, x, y, train_sizes, cv):
+    #Shows train/val scores of an estimator for varying no. of training samples.
+    #Shows if there a benefit from adding more training data
+    #Shows whether the estimator suffer from a variance error or a bias error
     train_sizes, train_scores, validation_scores = learning_curve(
     estimator, x, y, train_sizes = train_sizes,cv = cv,
-    scoring = 'accuracy') #MSE or accuracy (graph inverted)
-    #means and std:
+    scoring = 'accuracy')
     train_scores_mean = np.mean(train_scores,axis=1)
     validation_scores_mean = np.mean(validation_scores,axis=1)
     train_scores_std = np.std(train_scores,axis=1)
@@ -102,12 +105,19 @@ def learning_curves(estimator, x, y, train_sizes, cv):
     plt.show()
     #not enough data for validation curves to give valid results
     #code for reference
-learning_curves(best_clf, x_train, y_train, np.linspace(0.1,1.0,30), cv=30)
+#learning_curves(best_clf, x_train, y_train, np.linspace(0.1,1.0,30), cv=30)
 
-def confusion_matrix():
-    pass
-confusion_matrix()
-
-
-y_pred = best_clf.predict(x_test)
-print("Score:", accuracy_score(y_pred,y_test))
+def plot_confusion_matrix(clf, x, y_actual, cv, title=None):
+    y_pred = cross_val_predict(clf, x, y_actual, cv=cv)
+    con_matrix = confusion_matrix(y_actual, y_pred)
+    heatmap = sn.heatmap(con_matrix, annot=True)
+    plt.title("Confusion Matrix of y_{}".format(title), fontsize = 12)
+    plt.ylabel('Actual Label', fontsize = 14)
+    plt.xlabel('Predicted Label', fontsize = 14)
+    N = np.arange(0.5, 3)
+    plt.xticks(N,('Setosa', 'Versicolour', "Virginica"))
+    plt.yticks(N,('Setosa', 'Versicolour', "Virginica"))
+    plt.show()
+    print("Score:", accuracy_score(y_pred,y_actual))
+plot_confusion_matrix(best_clf, x_train, y_train, 3, title="train")
+#plot_confusion_matrix(best_clf, x_test, y_test, 3, title="test")
